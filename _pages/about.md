@@ -17,7 +17,7 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: false # includes social icons at the bottom of the page
 ---
 
-The Geometric-Grounded Representation Learning and Generative Modelling (GRaM) workshop aims to provide a platform that fosters learning, collaboration, and the advancement of the geometry-grounded methods in machine learning. In this Blogpost-Tutorial track, we intend to encourage transparent discussions and opinions in the field, and make geometric machine learning more accessible.
+The Geometric-Grounded Representation Learning and Generative Modelling ([GRaM](https://gram-workshop.github.io/)) workshop aims to provide a platform that fosters learning, collaboration, and the advancement of the geometry-grounded methods in machine learning. In this Blogpost-Tutorial track, we intend to encourage transparent discussions and opinions in the field, and make geometric machine learning more accessible.
 
 This blogpost track is directly inspired by the amazing [ICLR blogpost track](https://iclr-blogposts.github.io). :heart:
 
