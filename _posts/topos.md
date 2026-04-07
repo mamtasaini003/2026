@@ -68,28 +68,17 @@ Deep learning offers compelling alternatives for tackling PDEs on irregular doma
 
 % Optimal transport for geometry encoding. Optimal transport offers a precise lens for minimal-cost density transformations. We recast surface meshes as density measures capturing curvature and complexity, solving for transport maps to uniform latent densities. This sidesteps interpolation artifacts like clustering, delivering smooth, metric-preserving diffeomorphisms akin to r-adaptive meshing <d-cite key="budd2015geometry"></d-cite> but topology-agnostic. Sinkhorn approximations <d-cite key="cuturi2013sinkhorn"></d-cite> render it computationally viable. Our framework embeds mesh submanifolds into latent spaces with intact geometry.
 
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=\textwidth]{topos_image.png}
-    \caption{The TOPOS Architecture. A four-stage pipeline that utilizes an Optimal Transport (OT) encoder to standardize irregular 3D meshes, a topological router to compute the Euler characteristic ($$\chi$$), and a Spectral Neural Operator (FNO) to solve PDEs in a structured latent domain before decoding the solution back to the physical mesh.}
-    \label{fig:topos_architecture}
-\end{figure*}
+{% include figure.liquid path="assets/img/2026-04-02-topos/topos_image.png" class="img-fluid rounded z-depth-1" caption="The TOPOS Architecture. A four-stage pipeline that utilizes an Optimal Transport (OT) encoder to standardize irregular 3D meshes, a topological router to compute the Euler characteristic ($$\chi$$), and a Spectral Neural Operator (FNO) to solve PDEs in a structured latent domain before decoding the solution back to the physical mesh." %}
 
-TOPOS bridges this by understanding \textit{messy} geometries to \textit{clean} spectral workbenches using a four-stage pipeline. 
+TOPOS bridges this by understanding *messy* geometries to *clean* spectral workbenches using a four-stage pipeline.  
 
-\textbf{Stage 1 (OT-Encoder)} computes instance-dependent $$T$$ pushing mesh density $$\mu$$ on $$\Omega$$ to uniform $$\nu$$ on latent $$\hat{\Omega}$$, preserving metrics diffeomorphically-unlike Geo-FNO's shared maps. 
+**Stage 1 (OT-Encoder)** computes instance-dependent $$T$$ pushing mesh density $$\mu$$ on $$\Omega$$ to uniform $$\nu$$ on latent $$\hat{\Omega}$$, preserving metrics diffeomorphically-unlike Geo-FNO's shared maps. 
 
-\textbf{Stage 2 (Topological Router)} selects workbench via Euler characteristic i.e., $$\chi = V-E+F = 2-2g$$ (sphere for $$g=0$$, torus for $$g=1$$), averting tears. 
-% \begin{align*}
-    % \chi = V-E+F = 2-2g
-% \end{align*} (sphere for $$g=0$$, torus for $$g=1$$), averting tears. 
+**Stage 2 (Topological Router)** selects workbench via Euler characteristic i.e., $$\chi = V-E+F = 2-2g$$ (sphere for $$g=0$$, torus for $$g=1$$), averting tears. 
 
-\textbf{Stage 3 (Latent Solver)} deploys FNO on the grid for global physics i.e., $$G(u) = \mathcal{F}^{-1}(R_\phi \cdot \mathcal{F}(Wu+b))$$
-% \begin{align*}
-    % G(u) = \mathcal{F}^{-1}(R_\phi \cdot \mathcal{F}(Wu+b))
-% \end{align*}   
+**Stage 3 (Latent Solver)** deploys FNO on the grid for global physics i.e., $$G(u) = \mathcal{F}^{-1}(R_\phi \cdot \mathcal{F}(Wu+b))$$   
 
-\textbf{Stage 4 (Decoder)} pulls back via $$T^{-1}$$ with soft rasterization. This ensures zero-shot super-resolution, topological integrity, and $$O(N\log N)$$ spectral efficiency vs. $$O(N \cdot G)$$ graph message passing (from GINO), learning physics once for unseen shapes of matching genus.
+**Stage 4 (Decoder)** pulls back via $$T^{-1}$$ with soft rasterization. This ensures zero-shot super-resolution, topological integrity, and $$O(N\log N)$$ spectral efficiency vs. $$O(N \cdot G)$$ graph message passing (from GINO), learning physics once for unseen shapes of matching genus.
 
 ## Methodology
 
@@ -152,47 +141,47 @@ achieving zero-shot generalization: physics learned on one low-resolution shape 
 \textbf{Symbol} & \textbf{Meaning} \\
 \midrule
 
-$$f$$ & Input field or source term (e.g., forcing, coefficients, boundary/initial conditions) \\
-$$u$$ & Ground-truth PDE solution field corresponding to $$f$$ \\
-$$\tilde{u}$$ & Predicted solution field in latent domain (pulled back to physical space via $$T$$) \\
+$f$ & Input field or source term (e.g., forcing, coefficients, boundary/initial conditions) \\
+$u$ & Ground-truth PDE solution field corresponding to $f$ \\
+$\tilde{u}$ & Predicted solution field in latent domain (pulled back to physical space via $T$) \\
 
-$$\mathcal{N}$$ & Differential operator defining the governing PDE (e.g., Navier–Stokes, diffusion) \\
-$$\mathcal{G}_\theta$$ & Neural operator mapping input field $$f$$ to solution field $$u$$ \\
-$$\mathcal{L}$$ & Total training loss (data misfit plus optional physics-informed term) \\
-$$\mathcal{L}_\text{PDE}$$ & Physics-informed loss enforcing PDE residual consistency \\
-$$T$$ & Diffeomorphic optimal-transport map from physical domain $$\Omega$$ to latent workbench $$\hat{\Omega}$$ \\
-$$T^{-1}$$ & Inverse transport map used to decode latent solutions back to the physical mesh \\
-$$\mu$$ & Input mesh density measure on physical domain $$\Omega$$ \\
-$$\nu$$ & Uniform reference density on latent workbench $$\hat{\Omega}$$ (sphere/torus/grid) \\
+$\mathcal{N}$ & Differential operator defining the governing PDE (e.g., Navier–Stokes, diffusion) \\
+$\mathcal{G}_\theta$ & Neural operator mapping input field $f$ to solution field $u$ \\
+$\mathcal{L}$ & Total training loss (data misfit plus optional physics-informed term) \\
+$\mathcal{L}_\text{PDE}$ & Physics-informed loss enforcing PDE residual consistency \\
+$T$ & Diffeomorphic optimal-transport map from physical domain $\Omega$ to latent workbench $\hat{\Omega}$ \\
+$T^{-1}$ & Inverse transport map used to decode latent solutions back to the physical mesh \\
+$\mu$ & Input mesh density measure on physical domain $\Omega$ \\
+$\nu$ & Uniform reference density on latent workbench $\hat{\Omega}$ (sphere/torus/grid) \\
 
-$$\Omega$$ & Irregular physical domain in $$\mathbb{R}^3$$ \\
-$$\hat{\Omega}$$ & Latent workbench domain (e.g., sphere or torus) after optimal transport \\
-$$\mathcal{M} = (V,E,F)$$ & Mesh representation: vertices $$V$$, edges $$E$$, faces $$F$$ \\
-$$V,E,F$$ & Vertex, edge, and face sets of the mesh, respectively \\
-$$g$$ & Genus (number of handles/holes) of the input geometry \\
-$$\chi$$ & Euler characteristic used to infer genus and route to topology-compatible workbench \\
-$$\chi(\mathcal{M})$$ & Euler characteristic of mesh $$\mathcal{M}$$, given by $$|V|-|E|+|F|$$ \\
+$\Omega$ & Irregular physical domain in $\mathbb{R}^3$ \\
+$\hat{\Omega}$ & Latent workbench domain (e.g., sphere or torus) after optimal transport \\
+$\mathcal{M} = (V,E,F)$ & Mesh representation: vertices $V$, edges $E$, faces $F$ \\
+$V,E,F$ & Vertex, edge, and face sets of the mesh, respectively \\
+$g$ & Genus (number of handles/holes) of the input geometry \\
+$\chi$ & Euler characteristic used to infer genus and route to topology-compatible workbench \\
+$\chi(\mathcal{M})$ & Euler characteristic of mesh $\mathcal{M}$, given by $|V|-|E|+|F|$ \\
 
-$$\tilde{f}$$ & Input field $$f$$ pushed forward to latent domain via $$T^{-1}$$ \\
-$$\hat{u}$$ & Latent-domain solution field before decoding to physical mesh \\
-$$u_\text{phys}$$ & Decoded solution field on the original physical mesh \\
-$$c(x,y)$$ & Optimal-transport cost function, here squared Euclidean distance $$\|x-y\|_2^2$$ \\
-$$w_{ij}$$ & Soft rasterization weights used for differentiable decoding/interpolation \\
-$$r_\psi$$ & Learnable topological router selecting appropriate latent workbench \\
-$$\theta$$ & Trainable parameters of the overall neural operator (encoder, solver, decoder) \\
+$\tilde{f}$ & Input field $f$ pushed forward to latent domain via $T^{-1}$ \\
+$\hat{u}$ & Latent-domain solution field before decoding to physical mesh \\
+$u_\text{phys}$ & Decoded solution field on the original physical mesh \\
+$c(x,y)$ & Optimal-transport cost function, here squared Euclidean distance $\|x-y\|_2^2$ \\
+$w_{ij}$ & Soft rasterization weights used for differentiable decoding/interpolation \\
+$r_\psi$ & Learnable topological router selecting appropriate latent workbench \\
+$\theta$ & Trainable parameters of the overall neural operator (encoder, solver, decoder) \\
 
-$$G$$ & Generic neural operator or layer mapping latent fields (e.g., FNO layer) \\
-$$G_k$$ & $$k$$-th FNO layer in the latent solver stack \\
-$$v_{k-1}, v_K$$ & Latent feature fields before layer $$k$$ and after the final layer $$K$$ \\
-$$R_{\phi_k}$$ & Learnable spectral kernel parameters in Fourier space for layer $$k$$ \\
-$$W, W_k$$ & Linear (pointwise) operators applied in physical or latent space \\
-$$b$$ & Bias term in the affine transformation within the spectral operator \\
-$$\phi_k$$ & Parameters associated with spectral kernel $$R_{\phi_k}$$ in layer $$k$$ \\
-$$\Pi$$ & Projection head mapping final latent features to solution space \\
-$$\sigma$$ & Pointwise nonlinearity (e.g., GELU activation) in the FNO layers \\
+$G$ & Generic neural operator or layer mapping latent fields (e.g., FNO layer) \\
+$G_k$ & $k$-th FNO layer in the latent solver stack \\
+$v_{k-1}, v_K$ & Latent feature fields before layer $k$ and after the final layer $K$ \\
+$R_{\phi_k}$ & Learnable spectral kernel parameters in Fourier space for layer $k$ \\
+$W, W_k$ & Linear (pointwise) operators applied in physical or latent space \\
+$b$ & Bias term in the affine transformation within the spectral operator \\
+$\phi_k$ & Parameters associated with spectral kernel $R_{\phi_k}$ in layer $k$ \\
+$\Pi$ & Projection head mapping final latent features to solution space \\
+$\sigma$ & Pointwise nonlinearity (e.g., GELU activation) in the FNO layers \\
 
-$$\mathcal{F}, \mathcal{F}^{-1}$$ & Fourier transform and inverse Fourier transform operators \\
-$$N$$ & Number of degrees of freedom (e.g., grid points) in the discretization \\
+$\mathcal{F}, \mathcal{F}^{-1}$ & Fourier transform and inverse Fourier transform operators \\
+$N$ & Number of degrees of freedom (e.g., grid points) in the discretization \\
 \bottomrule
 \end{tabular}
 \end{table}
