@@ -1,7 +1,7 @@
 ---
 layout: distill
 title: TOPOS \\ Topological Optimal-transport Partitioned Operator Solver
-description: Neural operators have emerged as a powerful paradigm in scientific machine learning, enabling resolution-invariant mappings across infinite-dimensional function spaces for applications including weather forecasting, fluid dynamics simulation and structural analysis. Despite their success on structured grids, these architectures struggle with arbitrary 3D geometries requiring retraining for each new shape and violating the need for zero-shot generalisation in real-world tasks. We introduce TOPOS (Topological Optimal-transport Partitioned Operational System), a unified framework that standardises irregular physical domains into topology-aware latent workbenches using instance-dependent optimal transport mappings and genus-based routing. For a given input mesh with density $$\mu$$, TOPOS computes a diffeomorphic transport $$T$$ to a uniform reference $$\nu$$ on a sphere $$(g=0)$$ or torus $$(g=1)$$ workbench, applies a spectral neural operator as a solver and decodes solutions back via inverse transport. This four-stage pipeline ensures topological integrity, discretisation invariance and computational speedups through three-dimensional to two-dimensional manifold reduction. TOPOS thus provides a universal physics engine, learning geometry-agnostic physical laws once and deploying them zero-shot across diverse topologies.
+description: Neural operators have emerged as a powerful approach in scientific machine learning, enabling resolution-invariant mappings across infinite-dimensional function spaces for applications including weather forecasting and fluid dynamics. While successful on structured grids, these architectures often require retraining for new 3D geometries, limiting zero-shot generalization. We introduce TOPOS (Topological Optimal-transport Partitioned Operational System), a unified framework that standardizes irregular physical domains into topology-aware latent workbenches using instance-dependent optimal transport mappings and genus-based routing. For a given input mesh with density $$\mu$$, TOPOS computes a diffeomorphic transport $$T$$ to a uniform reference $$\nu$$ on a sphere $$(g=0)$$ or torus $$(g=1)$$ workbench, applies a spectral neural operator as a solver and decodes solutions back via inverse transport. This four-stage pipeline ensures topological integrity, discretization invariance and computational efficiency through manifold reduction. TOPOS learns geometry-agnostic representations, allowing zero-shot deployment across variable topologies.
 date: 2026-04-02
 future: true
 htmlwidgets: true
@@ -59,18 +59,21 @@ _styles: >
 
 Solving partial differential equations (PDEs) on intricate 3D geometric domains continues to pose a core difficulty in computational science. Traditional finite element and spectral solvers perform well on regular geometries but falter on complex shapes, where costly meshing procedures demand repeated refinement cycles. This geometric complexity hinders progress in fields like fluid dynamics, structural engineering, and geophysics. The cost is steep: simulating a single automotive design can consume over 300 CPU-hours <d-cite key="elrefaie2024drivaernetparametriccardataset"></d-cite> or 10 GPU-hours <d-cite key="GINO"></d-cite>.
 
-Deep learning offers compelling alternatives for tackling PDEs on irregular domains, delivering substantial speedups over classical methods <d-cite key="bhatnagar2019prediction, pfaff2020learning, thuerey2020deep, hennigh2021nvidia"></d-cite>. These techniques thrive at reduced resolutions, slashing runtime demands. Yet, many remain tied to fixed mesh resolutions, curbing their versatility. Neural operators overcome this limitation by providing discretization-agnostic PDE solvers, marking a pivotal advance in the field.
+Deep learning methods provide fast alternatives for simulating PDEs on irregular domains <d-cite key="bhatnagar2019prediction, pfaff2020learning, thuerey2020deep, hennigh2021nvidia"></d-cite>. While these techniques operate efficiently at low resolutions, many remain coupled to fixed grid sizes, limiting their utility across diverse datasets. Neural operators bypass this limitation by learning discretization-invariant operators.
 
 **Neural operators for irregular geometries.** These models learn PDE solution operators directly from data in a mesh-agnostic fashion <d-cite key="FNO, kovachki2023neural, lu2021learning"></d-cite>. Discretization invariance sets them apart from standard neural networks, making them ideal for PDE tasks. Cutting-edge developments target complex geometries by projecting them into canonical latent spaces amenable to spectral tools like the Fast Fourier Transform (FFT) <d-cite key="Geo-FNO,yin2024dimon,ahmad2024diffeomorphiclatentneuraloperators"></d-cite>. The Geometry-Aware Fourier Neural Operator (Geo-FNO) <d-cite key="Geo-FNO"></d-cite> pioneered diffeomorphic mappings from physical domains to uniform grids, unlocking FFT acceleration in latent coordinates. Still, Geo-FNO relies on class-shared deformations that overlook instance-specific traits and uses matrix-heavy Fourier operations, impeding 3D scalability. The Geometry-Informed Neural Operator (GINO) <d-cite key="GINO"></d-cite> fused Graph Neural Operators (GNO) with FNO <d-cite key="li2020neural"></d-cite>, blending graph locality for meshes with FFT globalism to conquer high-Reynolds 3D flows. Its graph-centric design, however, inherits locality biases and 3D memory overheads, amplified at scale. Parallel efforts employ transformer tokens <d-cite key="hao2023gnot, wu2024transolver, alkin2024universal"></d-cite> or implicit representations <d-cite key="yin2022continuous, serrano2023operator, chen2023implicit, chen2022crom"></d-cite> for geometry encoding, versatile yet prone to losing metric fidelity and lacking invertibility for inverse design tasks. Prevailing neural operators thus wrestle with 3D costs and cross-geometry transfer. We counter this by recasting geometry embedding as per-instance optimal transport, enabling tailored manifold operators that redefine complex shape handling. OTNO <d-cite key="li2025geometric"></d-cite> embeds meshes as densities using per-instance optimal transport,
 \begin{align}
     T = \arg\min_{T_\sharp \mu = \nu} \int \|x - T(x)\|^2 d\mu(x),
 \end{align} yielding 5x speedups <d-cite key="li2025geometric"></d-cite>. Yet, shared maps ignore instance topology (genus $$g$$), graphs suffer locality, and 3D latents burden scaling.
 
-% Optimal transport for geometry encoding. Optimal transport offers a precise lens for minimal-cost density transformations. We recast surface meshes as density measures capturing curvature and complexity, solving for transport maps to uniform latent densities. This sidesteps interpolation artifacts like clustering, delivering smooth, metric-preserving diffeomorphisms akin to r-adaptive meshing <d-cite key="budd2015geometry"></d-cite> but topology-agnostic. Sinkhorn approximations <d-cite key="cuturi2013sinkhorn"></d-cite> render it computationally viable. Our framework embeds mesh submanifolds into latent spaces with intact geometry.
+**Optimal transport for geometry encoding.** Optimal transport provides a robust mathematical framework for minimal-cost density transformations. We recast surface meshes as discrete density measures capturing local curvature and complexity, directly solving for transport maps to uniform latent domains. This formulation avoids common interpolation artifacts such as vertex clustering, yielding smooth, metric-preserving diffeomorphisms comparable to classic r-adaptive meshing <d-cite key="budd2015geometry"></d-cite> but remaining topology-agnostic. Entropic regularization via Sinkhorn iterations <d-cite key="cuturi2013sinkhorn"></d-cite> renders the computation highly tractable. Ultimately, this enables the embedding of arbitrary mesh submanifolds into latent spaces while maintaining geometric integrity.
 
-{% include figure.liquid path="assets/img/2026-04-02-topos/topos_image.png" class="img-fluid rounded z-depth-1" caption="The TOPOS Architecture. A four-stage pipeline that utilizes an Optimal Transport (OT) encoder to standardize irregular 3D meshes, a topological router to compute the Euler characteristic ($$\chi$$), and a Spectral Neural Operator (FNO) to solve PDEs in a structured latent domain before decoding the solution back to the physical mesh." %}
+{% include figure.liquid path="assets/img/2026-04-02-topos/topos_image.png" class="img-fluid rounded z-depth-1" %}
+<div class="caption">
+    <b>Figure 1:</b> The TOPOS Architecture. A four-stage pipeline that utilizes an Optimal Transport (OT) encoder to standardize irregular 3D meshes, a topological router to compute the Euler characteristic ($$\chi$$), and a Spectral Neural Operator (FNO) to solve PDEs in a structured latent domain before decoding the solution back to the physical mesh.
+</div>
 
-TOPOS bridges this by understanding *messy* geometries to *clean* spectral workbenches using a four-stage pipeline.  
+TOPOS addresses this by mapping varied geometries to periodic latent domains via a four-stage pipeline.
 
 **Stage 1 (OT-Encoder)** computes instance-dependent $$T$$ pushing mesh density $$\mu$$ on $$\Omega$$ to uniform $$\nu$$ on latent $$\hat{\Omega}$$, preserving metrics diffeomorphically-unlike Geo-FNO's shared maps. 
 
@@ -82,9 +85,9 @@ TOPOS bridges this by understanding *messy* geometries to *clean* spectral workb
 
 ## Methodology
 
-We formalize TOPOS as a neural operator $$\mathcal{G}_\theta: f \mapsto u$$ that approximates solutions to parametric PDEs \begin{align}
+We formalize TOPOS as a neural operator (with trainable parameters $$\theta$$) $$\mathcal{G}_\theta: f \mapsto u$$ that maps an input field or source term $$f$$ to the ground-truth PDE solution field $$u$$ of a parametric PDE. Taking the governing PDE as \begin{align}
     \mathcal{N}[u] = f
-\end{align} defined on irregular domains $$\Omega \subset \mathbb{R}^3$$, represented by meshes $$\mathcal{M} = (V, E, F)$$ with associated density measures $$\mu$$. The architecture decomposes this operator learning problem into a principled four-stage pipeline that systematically transforms unstructured physical geometries into structured latent representations amenable to efficient spectral methods, then faithfully reconstructs solutions on the original mesh (Fig.~\ref{fig:topos_architecture}).
+\end{align} where $$\mathcal{N}$$ is a differential operator, this is defined on irregular macroscopic domains $$\Omega \subset \mathbb{R}^3$$, discretized by geometric representations $$\mathcal{M} = (V, E, F)$$ (consisting of vertices $$V$$, edges $$E$$, and faces $$F$$) with associated input density measures $$\mu$$. The framework solves this mapping problem by projecting unstructured geometries into latent spaces optimized for spectral networks, before reconstructing the outputs on the original mesh.
 
 In the first stage, the OT-Encoder addresses the fundamental mismatch between arbitrary mesh topologies and the uniform grid requirements of spectral neural operators. Treating the input mesh as an empirical measure 
 \begin{align*}
@@ -95,14 +98,14 @@ we solve the classical Monge optimal transport problem:
 \label{eq:ot}
 T = \arg\min_{T_\sharp \mu = \nu} \int_\Omega c(x, T(x)) \, d\mu(x), \quad c(x,y) = \|x - y\|^2_2
 \end{equation}
-where $$\nu$$ denotes a uniform reference density on a candidate latent workbench $$\hat{\Omega}$$ (such as a unit sphere or periodic grid). This formulation, solved via entropic regularization with Sinkhorn iterations~<d-cite key="cuturi2013sinkhorn"></d-cite>, yields a diffeomorphic transport map $$T: \Omega \to \hat{\Omega}$$. Input and solution fields are subsequently pushed forward as $$\tilde{f} = f \circ T^{-1}$$ and $$\tilde{u} = u \circ T^{-1}$$. This stage is essential to standardize vertex counts and spacing across diverse geometries; intuitively, it rearranges an irregular ``sandpile'' of mesh points into a perfectly uniform ``sandbox'' while uniquely preserving the shape's geometric and physical structure-unlike Geo-FNO's class-shared deformations <d-cite key="li2023fourier"></d-cite>.
+where $$\nu$$ denotes a uniform reference density on a candidate latent workbench $$\hat{\Omega}$$ (such as a unit sphere or periodic grid). This formulation, solved via entropic regularization with Sinkhorn iterations~<d-cite key="cuturi2013sinkhorn"></d-cite>, yields a diffeomorphic transport map $$T: \Omega \to \hat{\Omega}$$ bounded by optimal-transport costs. Input and solution fields are subsequently pushed forward to the latent domain as $$\tilde{f} = f \circ T^{-1}$$ and $$\tilde{u} = u \circ T^{-1}$$, utilizing the inverse transport map $$T^{-1}$$. This stage is essential to standardize vertex counts and spacing across diverse geometries; intuitively, it rearranges an irregular "sandpile" of mesh points into a perfectly uniform "sandbox" while uniquely preserving the shape's geometric and physical structure-unlike Geo-FNO's class-shared deformations <d-cite key="Geo-FNO"></d-cite>.
 
 The second stage, the Topological Router, ensures that the chosen workbench respects the input geometry's intrinsic topology, preventing non-diffeomorphic mappings that cause gradient pathologies. We compute the Euler characteristic
 \begin{equation}
 \label{eq:euler}
 \chi(\mathcal{M}) = |V| - |E| + |F| = 2 - 2g
 \end{equation}
-to determine the genus $$g$$, then route to topology-compatible domains: a sphere ($$S^2$$ with spherical harmonics) for $$g=0$$ (closed surfaces), a torus or periodic grid (enabling FFT) for $$g=1$$ (objects with holes), or a cubic lattice for volumetric cases. A lightweight learnable selector $$r_\psi(\chi, \mathcal{M})$$ adaptively weights these candidates during training. This routing is critical for maintaining continuous gradients and topological fidelity; by matching ``connectivity holes,'' it avoids the tearing artifacts present in prior work like OTNO~<d-cite key="li2025geometric"></d-cite>, particularly for high-genus structures such as pipes or cavities.
+to determine the genus $$g$$, then route to topology-compatible domains: a sphere ($$S^2$$ with spherical harmonics) for $$g=0$$ (closed surfaces), a torus or periodic grid (enabling FFT) for $$g=1$$ (objects with holes), or a cubic lattice for volumetric cases. A lightweight learnable selector $$r_\psi(\chi, \mathcal{M})$$ adaptively weights these candidates during training. This routing is critical for maintaining continuous gradients and topological fidelity; by matching "connectivity holes," it avoids the tearing artifacts present in prior work like OTNO~<d-cite key="li2025geometric"></d-cite>, particularly for high-genus structures such as pipes or cavities.
 
 Once standardized and topologically aligned, Stage 3-the Latent Solver-deploys a resolution-invariant spectral operator on the selected $$\hat{\Omega}_g$$. We instantiate this with the Fourier Neural Operator over $$K$$ layers:
 \begin{align}
@@ -110,87 +113,37 @@ Once standardized and topologically aligned, Stage 3-the Latent Solver-deploys a
 G_k(v_{k-1}) &= \sigma \left( \mathcal{F}^{-1} \big( R_{\phi_k} \cdot \mathcal{F}(v_{k-1}) \big) + W_k v_{k-1} \right), \\
 v_K &= \Pi \big( G_K(\ell_0(\tilde{f})) \big)
 \end{align}
-where $$R_{\phi_k}$$ are learnable spectral kernels, $$\sigma$$ is GELU, and $$\Pi$$ projects to solution space~<d-cite key="FNO"></d-cite>. An optional physics-informed loss \begin{align}
+where $$v_{k-1}$$ and $$v_K$$ denote the latent feature fields between processing layers, $$R_{\phi_k}$$ represents the learnable spectral kernel parameters in Fourier space for layer $$k$$ (parameterized by $$\phi_k$$), $$W_k$$ is a linear pointwise operator, $$\sigma$$ is the corresponding GELU pointwise nonlinearity, and $$\mathcal{F}$$ and $$\mathcal{F}^{-1}$$ denote the Fourier and inverse Fourier transforms. The terminal head $$\Pi$$ projects final latent features to the physical solution space~<d-cite key="FNO"></d-cite>. An optional physics-informed loss \begin{align}
     \mathcal{L}_\text{PDE} = \|\mathcal{N}[\hat{u}] - \tilde{f}\|^2_\Omega
 \end{align} 
-enforces consistency. This design scalably captures nonlocal physics via $$O(N \log N)$$ FFT operations; conceptually, it distills ``pure physical laws'' (e.g., Navier-Stokes dynamics) into frequency patterns on an idealized grid, enabling shape-independent generalization.
+enforces consistency. This design captures nonlocal dependencies via $$O(N \log N)$$ FFT operations, extracting physical dynamics (e.g., Navier-Stokes) on a frequency grid to support shape-independent predictions.
 
-Finally, the Decoder in Stage 4 reprojects the latent solution $$\hat{u} \in \hat{\Omega}_g$$ back to the physical domain via the inverse transport: $$u_\text{phys} = \hat{u} \circ T$$. In practice, we implement this pullback through differentiable soft rasterization:
+Finally, the Decoder in Stage 4 reprojects the latent solution field $$\hat{u} \in \hat{\Omega}_g$$ back to the physical domain via the inverse transport: $$u_\text{phys} = \hat{u} \circ T$$, delivering the final decoded output $$u_\text{phys}$$ on the original physical mesh. In practice, we implement this pullback through differentiable soft rasterization:
 \begin{equation}
 \begin{aligned}
 \label{eq:decoder}
 u_\text{phys}(x_i) & = \sum_{j \in \hat{\Omega}_g} \hat{u}(T(x_i)) \cdot w_{ij} \\ w_{ij} & = \operatorname{\texttt{softmax}} \big( \|T(x_i) - y_j\|^2 \big)
 \end{aligned}
 \end{equation}
-or bipartite graph interpolation, yielding the full operator \begin{align}
+or bipartite graph interpolation, where $$w_{ij}$$ are soft rasterization weights used for differentiable decoding, yielding the full operator \begin{align}
     \mathcal{G}_\theta(f) = \text{Dec}_\theta(\text{Solve}_g(\text{Enc}_\theta(f))).
 \end{align}
-This step delivers interpretable fields on the original mesh; akin to snapping a stretched rubber sheet back to its natural form, it seamlessly transfers physics-informed predictions without distortion.
+This interpolation step yields outputs directly on the original mesh geometry and maps latent features back to physical coordinates without interpolation gaps.
 
-The full model trains end-to-end by minimizing 
+The full model trains end-to-end by minimizing the total loss $$\mathcal{L}$$ (data misfit plus physics-informed terms):
 \begin{align}
     \mathcal{L} = \|u - \mathcal{G}_\theta(f)\|^2 + \lambda \mathcal{L}_\text{PDE},
 \end{align}
-achieving zero-shot generalization: physics learned on one low-resolution shape deploys instantly to unseen high-resolution instances of matching genus.
+where $$\mathcal{L}_\text{PDE}$$ explicitly enforces PDE residual consistency. This achieves zero-shot generalization: physics learned on one low-resolution shape deploys instantly to unseen high-resolution instances of matching genus.
 
-\begin{table}[!h]
-\centering
-\scriptsize
-\begin{tabular}{p{0.6cm} p{7cm}}
-\toprule
-\textbf{Symbol} & \textbf{Meaning} \\
-\midrule
-
-$f$ & Input field or source term (e.g., forcing, coefficients, boundary/initial conditions) \\
-$u$ & Ground-truth PDE solution field corresponding to $f$ \\
-$\tilde{u}$ & Predicted solution field in latent domain (pulled back to physical space via $T$) \\
-
-$\mathcal{N}$ & Differential operator defining the governing PDE (e.g., Navier–Stokes, diffusion) \\
-$\mathcal{G}_\theta$ & Neural operator mapping input field $f$ to solution field $u$ \\
-$\mathcal{L}$ & Total training loss (data misfit plus optional physics-informed term) \\
-$\mathcal{L}_\text{PDE}$ & Physics-informed loss enforcing PDE residual consistency \\
-$T$ & Diffeomorphic optimal-transport map from physical domain $\Omega$ to latent workbench $\hat{\Omega}$ \\
-$T^{-1}$ & Inverse transport map used to decode latent solutions back to the physical mesh \\
-$\mu$ & Input mesh density measure on physical domain $\Omega$ \\
-$\nu$ & Uniform reference density on latent workbench $\hat{\Omega}$ (sphere/torus/grid) \\
-
-$\Omega$ & Irregular physical domain in $\mathbb{R}^3$ \\
-$\hat{\Omega}$ & Latent workbench domain (e.g., sphere or torus) after optimal transport \\
-$\mathcal{M} = (V,E,F)$ & Mesh representation: vertices $V$, edges $E$, faces $F$ \\
-$V,E,F$ & Vertex, edge, and face sets of the mesh, respectively \\
-$g$ & Genus (number of handles/holes) of the input geometry \\
-$\chi$ & Euler characteristic used to infer genus and route to topology-compatible workbench \\
-$\chi(\mathcal{M})$ & Euler characteristic of mesh $\mathcal{M}$, given by $|V|-|E|+|F|$ \\
-
-$\tilde{f}$ & Input field $f$ pushed forward to latent domain via $T^{-1}$ \\
-$\hat{u}$ & Latent-domain solution field before decoding to physical mesh \\
-$u_\text{phys}$ & Decoded solution field on the original physical mesh \\
-$c(x,y)$ & Optimal-transport cost function, here squared Euclidean distance $\|x-y\|_2^2$ \\
-$w_{ij}$ & Soft rasterization weights used for differentiable decoding/interpolation \\
-$r_\psi$ & Learnable topological router selecting appropriate latent workbench \\
-$\theta$ & Trainable parameters of the overall neural operator (encoder, solver, decoder) \\
-
-$G$ & Generic neural operator or layer mapping latent fields (e.g., FNO layer) \\
-$G_k$ & $k$-th FNO layer in the latent solver stack \\
-$v_{k-1}, v_K$ & Latent feature fields before layer $k$ and after the final layer $K$ \\
-$R_{\phi_k}$ & Learnable spectral kernel parameters in Fourier space for layer $k$ \\
-$W, W_k$ & Linear (pointwise) operators applied in physical or latent space \\
-$b$ & Bias term in the affine transformation within the spectral operator \\
-$\phi_k$ & Parameters associated with spectral kernel $R_{\phi_k}$ in layer $k$ \\
-$\Pi$ & Projection head mapping final latent features to solution space \\
-$\sigma$ & Pointwise nonlinearity (e.g., GELU activation) in the FNO layers \\
-
-$\mathcal{F}, \mathcal{F}^{-1}$ & Fourier transform and inverse Fourier transform operators \\
-$N$ & Number of degrees of freedom (e.g., grid points) in the discretization \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 ## Results
 
+The primary objective of our experimental evaluation is to rigorously assess the capacity of TOPOS to maintain high predictive fidelity across heterogeneous topological domains. Specifically, we aim to demonstrate that explicitly routing shapes by their Euler characteristic prevents the geometric distortion and accuracy degradation frequently observed in fixed-workbench latent models. Furthermore, we evaluate the computational scaling limits of TOPOS relative to standard graph-based architectures in high-resolution, real-world inference scenarios.
+
 ### Experimental Setup
 
-We evaluate TOPOS against two strong baselines—OTNO <d-cite key="li2025geometric"></d-cite> (an ablation without topological routing) and GINO <d-cite key="GINO"></d-cite> (a graph-based neural operator)—on two demanding datasets:
+We evaluate TOPOS against two strong baselines-OTNO <d-cite key="li2025geometric"></d-cite> (an ablation without topological routing) and GINO <d-cite key="GINO"></d-cite> (a graph-based neural operator)-on two demanding datasets:
 - **Mixed-Genus Synthetic Benchmark:** 500 training / 111 test samples spanning 4 topology classes (spherical, toroidal, open surface, high-genus).
 - **Thingi10K Real-World Benchmark:** 111 real 3D-printable meshes, each converted into a 3586-point cloud with SDF-derived pressure targets. 
 
@@ -198,7 +151,7 @@ All models are trained with identical protocols (Adam, StepLR, max 151 epochs).
 
 ### Key Findings: Mixed-Genus Benchmark
 
-**Overall Performance.** TOPOS exhibits superior generalization, achieving a mean relative $$L^2$$ error of 0.1846—outperforming OTNO by 22.8% and significantly surpassing GINO. Notably, TOPOS offers the tightest error distribution, with a standard deviation nearly $$8\times$$ smaller than OTNO's, ensuring consistent reliability.
+**Overall Performance.** TOPOS exhibits superior generalization, achieving a mean relative $$L^2$$ error of 0.1846-outperforming OTNO by 22.8% and significantly surpassing GINO. Notably, TOPOS offers the tightest error distribution, with a standard deviation nearly $$8\times$$ smaller than OTNO's, ensuring consistent reliability.
 
 | Model | Mean $$L^2$$ Error | Median | Std Dev | P95 |
 | :--- | :---: | :---: | :---: | :---: |
@@ -224,33 +177,23 @@ All models are trained with identical protocols (Adam, StepLR, max 151 epochs).
     </div>
 </div>
 <div class="caption">
-    Left: Error versus genus line plot demonstrating that OTNO's error climbs steeply with topological genus mapping mismatch, whereas TOPOS remains fundamentally flat across classes. Right: Error violin plots for the mixed-genus benchmark showcasing TOPOS's significantly tighter error distribution (variance) without extreme outlier degradation.
+    <b>Figure 2:</b> Left: Error versus genus line plot demonstrating that OTNO's error climbs steeply with topological genus mapping mismatch, whereas TOPOS remains fundamentally flat across classes. Right: Error violin plots for the mixed-genus benchmark showcasing TOPOS's significantly tighter error distribution (variance) without extreme outlier degradation.
 </div>
 
 ### Real-World Generalization: Thingi10K
 
-On real-world data, geometries are far more diverse and topological features more pronounced. Here, TOPOS proves highly robust, reducing mean test error by 38.4% compared to OTNO. By comparing global vs. boundary error, we find that TOPOS maintains uniform fidelity across the entire spatial domain. Conversely, traditional single-latent approaches like OTNO suffer from ringing exactly at artificial seams where the optimal transport mapping incorrectly truncates topological handles.
+On real-world data, geometries display complex structures and variable topology. In these configurations, TOPOS reduces mean test error by 38.4% compared to OTNO. By comparing global vs. boundary error, we find that TOPOS maintains uniform fidelity across the entire spatial domain. Conversely, traditional single-latent approaches like OTNO suffer from ringing near artificial seams where the optimal transport mapping incorrectly truncates topological holes.
 
 | Model | Mean $$L^2$$ Error | Median | Std Dev | P95 |
 | :--- | :---: | :---: | :---: | :---: |
 | **TOPOS** | **0.6005** | **0.5244** | 0.2787 | **1.1024** |
 | OTNO | 0.9744 | 1.0057 | **0.1937** | 1.2478 |
 
-<div class="row mt-3">
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid path="assets/img/2026-04-02-topos/fig2_error_heatmap_thingi10k.png" class="img-fluid rounded z-depth-1" %}
-    </div>
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid path="assets/img/2026-04-02-topos/fig4_robustness_violin_thingi10k.png" class="img-fluid rounded z-depth-1" %}
-    </div>
-</div>
-<div class="caption">
-    Left: 3D error heatmaps on real-world geometries from the Thingi10K dataset highlighting OTNO's focused ringing artifacts at artificially cut topological seams. Right: Robustness distributions validating TOPOS's continuous reliability even on highly diverse real world open surfaces and multi-genus objects.
-</div>
+
 
 ### Scalability and Computational Efficiency
 
-Despite architectural differences, the operational cost tells a clear story: per-instance graph construction algorithms scale poorly for 3D physics. By eschewing dense graph builds, TOPOS retains the rapid $$O(N \log N)$$ cost characteristic of spectral neural operators.
+Per-instance graph construction algorithms require significant computational overhead for 3D domains. By avoiding dense graph operations, TOPOS achieves the $$O(N \log N)$$ efficiency typical of spectral operators.
 
 | Model | Params (M) | Peak GPU (MB) | Per-Sample Time (ms) | Scaling|
 | :--- | :---: | :---: | :---: | :--- |
@@ -258,7 +201,7 @@ Despite architectural differences, the operational cost tells a clear story: per
 | OTNO | 7.00 | 81.6 | 9.7 | $$O(N \log N)$$ |
 | GINO | 95.34 | 781.2 | 921.4 | $$O(N \cdot G)$$ |
 
-GINO's graph message passing demands massive neighbor arrays, surging its per-sample inference time to $$\sim 920$$ ms—$$101\times$$ slower than TOPOS. Even with 95M parameters, GINO fails to converge effectively within standard training budgets.
+GINO's graph message passing demands massive neighbor arrays, surging its per-sample inference time to $$\sim 920$$ ms-$$101\times$$ slower than TOPOS. Even with 95M parameters, GINO fails to converge effectively within standard training budgets.
 
 <div class="row mt-3">
     <div class="col-sm mt-3 mt-md-0">
@@ -269,24 +212,24 @@ GINO's graph message passing demands massive neighbor arrays, surging its per-sa
     </div>
 </div>
 <div class="caption">
-    Pareto analysis of accuracy versus inference time (left) and peak GPU memory (right) on the mixed-genus dataset. TOPOS asserts the optimal Pareto position natively: attaining the structural flexibility typical of massive graph networks (GINO) while retaining the negligible memory footprint and millisecond-level execution latency uniquely seen in pure spectral solvers (OTNO).
+    <b>Figure 3:</b> Pareto analysis of accuracy versus inference time (left) and peak GPU memory (right) on the mixed-genus dataset. TOPOS asserts the optimal Pareto position natively: attaining the structural flexibility typical of massive graph networks (GINO) while retaining the negligible memory footprint and millisecond-level execution latency uniquely seen in pure spectral solvers (OTNO).
 </div>
 
 ### Discussion & Analysis
 
-The empirical findings above highlight fundamental trade-offs in neural operator architecture, validating the core intuitions behind TOPOS:
+The empirical results detailed above identify structural trade-offs across neural operator variants and demonstrate the necessity of the TOPOS routing approach:
 
-- **The Mathematical Reality of Topological Mismatch:** The widening gap in performance between OTNO and TOPOS on non-toroidal geometries isolates the true cost of unaligned mappings. OTNO's errors range dramatically from 0.0800 (toroidal) up to 0.3205 (high-genus)—a spread of 0.2405. TOPOS, via intelligent routing, confines its error spread strictly to 0.0502. This concretely confirms that standardizing disparate geometries to a single latent genus entails unavoidable structural tearing that cannot be optimized away.
-- **Why Naïve Graph Scaling Fails:** GINO demonstrates that topology-agnostic graph operations—while theoretically comprehensive—face extreme computational bottlenecks. Navigating the parameter space of a 95.34M model requires deep training, yet rebuilding an $$O(N \cdot G)$$ radius-based neighbor graph for *every* unique surface caps training throughput drastically. Ultimately, GINO suffers from "excessive parameterization," unable to securely correlate local graphs to global PDE physics.
-- **Boundary and Feature Fidelity:** Error maps distinguishing global versus localized border regions confirm TOPOS's robustness. TOPOS yields practically identical metrics across surfaces (0.1846 global vs. 0.1851 boundary). Alternatively, forcing closed maps onto open manifolds concentrates heavy topological artifacting—manifesting as intense Gibbs-like ringing—right at those artificial boundary seams.
+- **The Mathematical Reality of Topological Mismatch:** The widening gap in performance between OTNO and TOPOS on non-toroidal geometries isolates the true cost of unaligned mappings. OTNO's errors range dramatically from 0.0800 (toroidal) up to 0.3205 (high-genus)-a spread of 0.2405. TOPOS, via intelligent routing, confines its error spread strictly to 0.0502. This concretely confirms that standardizing disparate geometries to a single latent genus entails unavoidable structural tearing that cannot be optimized away.
+- **Why Naïve Graph Scaling Fails:** GINO demonstrates that topology-agnostic graph operations-while theoretically comprehensive-face extreme computational bottlenecks. Navigating the parameter space of a 95.34M model requires deep training, yet rebuilding an $$O(N \cdot G)$$ radius-based neighbor graph for *every* unique surface caps training throughput drastically. Ultimately, GINO suffers from "excessive parameterization," unable to securely correlate local graphs to global PDE physics.
+- **Boundary and Feature Fidelity:** Error maps distinguishing global versus localized border regions confirm TOPOS's robustness. TOPOS yields practically identical metrics across surfaces (0.1846 global vs. 0.1851 boundary). Alternatively, forcing closed maps onto open manifolds concentrates heavy topological artifacting-manifesting as intense Gibbs-like ringing-right at those artificial boundary seams.
 
 ## Conclusion
 
-This work introduces TOPOS, a topology-aware neural operator framework equipped to consistently solve parametric PDEs across geometries of varying complexity.
+This work proposes TOPOS, a topology-aware neural operator framework for solving parametric PDEs across arbitrary geometric surfaces.
 
 - **Categorization is Highly Effective:** Evaluating the Euler characteristic $$\chi = V - E + F$$ entails minimal computational overhead yet reliably directs irregular physical domains into optimal spectral spaces, compressing error variance by up to $$14\times$$ versus competing baselines.
 - **Topological Integrity is Vital:** Arbitrary mapping between irreconcilable topologies (e.g. genus 2 mapped to a bounding torus) structurally undermines continuous PDE gradients. Dynamically categorizing shapes prevents such degradation. 
-- **Industrial Scalability:** By entirely sidestepping instance-specific, $$O(N \cdot G)$$ graph operations and prioritizing computationally friendly Fourier spaces, TOPOS scales beautifully—processing high-fidelity meshes in under 10 milliseconds.
+- **Industrial Scalability:** By entirely sidestepping instance-specific, $$O(N \cdot G)$$ graph operations and prioritizing computationally friendly Fourier spaces, TOPOS scales beautifully-processing high-fidelity meshes in under 10 milliseconds.
 
-We envision future expansions accommodating mixed-genus assemblies through continuous topological measures, marking the next critical step towards general-purpose, geometry-agnostic scientific AI.
+Future work will focus on modeling mixed-genus sub-assemblies through continuous topological invariants, further expanding the applicability of latent spectral operators.
 
